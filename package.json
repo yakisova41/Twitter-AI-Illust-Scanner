@@ -1,0 +1,18 @@
+{
+  "name": "twitter-ai-illust-scanner",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npx crx-monkey build",
+    "dev": "npx crx-monkey dev"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.269",
+    "crx-monkey": "^0.11.2",
+    "prettier": "^3.3.3"
+  },
+  "dependencies": {
+    "twitter-openapi-typescript": "^0.0.34"
+  }
+}
