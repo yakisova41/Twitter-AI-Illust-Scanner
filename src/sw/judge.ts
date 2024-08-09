@@ -27,7 +27,7 @@ const AIWORDS = [
   "(?<![Mm])[aA][iI](?![Ll])",
 ];
 const aiReg = `${AIWORDS.join("|")}`;
-console.log(aiReg);
+
 const HUMANWORDS = [
   "スマホ指描き",
   "手書き",

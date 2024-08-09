@@ -61,6 +61,8 @@ function onNewArticle(article: Element) {
       const cache = await getCache(userName);
 
       if (cache !== null) {
+        console.log(userName, cache);
+
         if (cache.score > 50) {
           createInfo(
             article,
@@ -84,6 +86,8 @@ function onNewArticle(article: Element) {
 
           if (res.id === id) {
             const isAI = res.score > 50;
+
+            console.log(userName, res);
 
             setCache(userName, res);
 
