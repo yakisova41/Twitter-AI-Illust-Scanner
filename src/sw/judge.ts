@@ -22,16 +22,12 @@ const AIWORDS = [
   "stablediffusion",
   "Diffusion",
   "diffusion",
-  "(?<!\\S)AI(?!\\S)",
-  "(?<!\\S)ai(?!\\S)",
-  "AI生成",
-  "AIイラスト",
   "プロンプト",
-  "生成イラスト",
   "生成",
+  "(?<![Mm])[aA][iI](?![Ll])",
 ];
 const aiReg = `${AIWORDS.join("|")}`;
-
+console.log(aiReg);
 const HUMANWORDS = [
   "スマホ指描き",
   "手書き",

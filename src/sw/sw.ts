@@ -11,13 +11,21 @@ TwitterOpenApi.fetchApi = niceFetch;
 let client: null | TwitterOpenApiClient = null;
 
 chrome.runtime.onStartup.addListener(async () => {
-  const api = new TwitterOpenApi();
-  client = await api.getGuestClient();
+  if (client !== null) {
+    const api = new TwitterOpenApi();
+    client = await api.getGuestClient();
+  }
 });
 
-chrome.runtime.onInstalled.addListener(async () => {
-  const api = new TwitterOpenApi();
-  client = await api.getGuestClient();
+chrome.runtime.onInstalled.addListener(async (details) => {
+  if (details.reason == "update") {
+    await chrome.storage.local.clear();
+  }
+
+  if (client !== null) {
+    const api = new TwitterOpenApi();
+    client = await api.getGuestClient();
+  }
 });
 
 type JudgeCallback = (result: JudgeResult) => void;
