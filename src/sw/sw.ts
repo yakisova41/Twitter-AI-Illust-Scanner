@@ -10,21 +10,14 @@ TwitterOpenApi.fetchApi = niceFetch;
 
 let client: null | TwitterOpenApiClient = null;
 
-chrome.runtime.onStartup.addListener(async () => {
-  if (client !== null) {
-    const api = new TwitterOpenApi();
-    client = await api.getGuestClient();
-  }
+const api = new TwitterOpenApi();
+api.getGuestClient().then((c) => {
+  client = c;
 });
 
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason == "update") {
     await chrome.storage.local.clear();
-  }
-
-  if (client !== null) {
-    const api = new TwitterOpenApi();
-    client = await api.getGuestClient();
   }
 });
 
