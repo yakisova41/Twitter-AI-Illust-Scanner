@@ -15,10 +15,10 @@ export function sendRequest<T extends keyof AIScannerRequestValues>(
       messageId,
     });
 
-    bypassMessage<AIScannerMsgResponse<T>>((request) => {
+    const listener = bypassMessage<AIScannerMsgResponse<T>>((request) => {
       if (request.messageId === messageId) {
         const { value } = request;
-
+        listener.remove();
         resolve(value);
       }
     });
