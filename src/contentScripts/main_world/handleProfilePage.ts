@@ -1,6 +1,9 @@
 import { sendRequest } from "../message";
 import { createInfoElement } from "../utils";
 
+let previousUser: null | string = null;
+let previousInfo: null | Element = null;
+
 export async function handleProfilePage() {
   const foundAttr = "twitter-ai-judged";
 
@@ -8,14 +11,23 @@ export async function handleProfilePage() {
     `div[data-testid="UserName"] > div:nth-child(1) >  div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div[dir="ltr"] > span:not([${foundAttr}])`,
   );
 
+  const screenName = location.pathname.substring(1);
+
   if (userNameElem !== null) {
     userNameElem.setAttribute(foundAttr, "");
+  }
+
+  if (userNameElem !== null || previousUser !== screenName) {
+    if (previousInfo !== null) {
+      previousInfo.remove();
+    }
+
+    previousUser = screenName;
 
     /**
      * Append delay because removing all cookie in x.com temporarily when using api.
      */
     setTimeout(async () => {
-      const screenName = userNameElem.textContent!.substring(1);
       const infoParent = document.querySelector(
         'div[data-testid="UserName"] > div:nth-child(1) > div:nth-child(1)',
       )!;
@@ -32,6 +44,8 @@ export async function handleProfilePage() {
         );
 
         infoParent.appendChild(info);
+
+        previousInfo = info;
       }
 
       console.log(screenName, result);
