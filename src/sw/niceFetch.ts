@@ -9,7 +9,6 @@ export async function niceFetch(
   init?: RequestInit | undefined,
 ): Promise<Response> {
   const req = getReq(input);
-  const url = new URL(req.href);
 
   let newHeaders: Record<string, any> = {
     ...req.headers,

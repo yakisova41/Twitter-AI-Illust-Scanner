@@ -14,12 +14,10 @@ const manifest = {
   ],
   content_scripts: [
     {
-      matches: [
-        "https://x.com/*",
-        "https://api.twitter.com/*",
-        "https://twitter.com/*",
-      ],
-      js: ["src/contentScripts/contentScript.ts"],
+      matches: ["https://x.com/*", "https://twitter.com/*"],
+      js: ["src/contentScripts/main_world/main.ts"],
+      world: "MAIN",
+      connection_isolated: true,
     },
   ],
   background: {

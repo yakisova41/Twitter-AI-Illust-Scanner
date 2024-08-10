@@ -2,78 +2,181 @@ import {
   TwitterOpenApi,
   TwitterOpenApiClient,
 } from "twitter-openapi-typescript";
-import { JudgeResult, judge } from "./judge";
 import { niceFetch } from "./niceFetch";
+import {
+  AIScannerMsgRequest,
+  AIScannerMsgResponse,
+} from "src/contentScripts/message";
+import { ScanResult, Scanner } from "./Scanner";
 
 TwitterOpenApi.twitter = "https://x.com/";
 TwitterOpenApi.fetchApi = niceFetch;
 
 let client: null | TwitterOpenApiClient = null;
 
-const api = new TwitterOpenApi();
-api.getGuestClient().then((c) => {
-  client = c;
-});
-
+// Clear judge caches when updated extension.
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason == "update") {
     await chrome.storage.local.clear();
   }
 });
 
-type JudgeCallback = (result: JudgeResult) => void;
-const judgingUsers: Record<string, JudgeCallback[]> = {};
-
 chrome.runtime.onMessage.addListener(
-  (request: UserGetReq, sender, sendResponse) => {
-    let name = request.user;
-    if (request.user[0] === "@") {
-      name = request.user.substring(1);
-    }
-
-    const clientNotNull = (client: TwitterOpenApiClient) => {
-      if (judgingUsers[name] !== undefined) {
-        judgingUsers[name].push((data) => {
-          chrome.tabs.sendMessage<MessageResponse>(sender.tab!.id!, {
-            ...data,
-            id: request.id,
-          });
-        });
-      } else {
-        judgingUsers[name] = [];
-
-        judge(name, client).then((data) => {
-          judgingUsers[name].forEach((callback) => {
-            callback(data);
-          });
-
-          delete judgingUsers[name];
-
-          chrome.tabs.sendMessage<MessageResponse>(sender.tab!.id!, {
-            ...data,
-            id: request.id,
-          });
-        });
-      }
-    };
-
-    if (client !== null) {
-      clientNotNull(client);
-    } else {
-      const api = new TwitterOpenApi();
-      api.getGuestClient().then((c) => {
-        client = c;
-        clientNotNull(client);
-      });
+  (request: AIScannerMsgRequest, sender, sendResponse) => {
+    switch (request.requestName) {
+      case "scanByTweet":
+        handleScanByTweetRequest(
+          request as AIScannerMsgRequest<"scanByTweet">,
+          sender,
+        );
+        break;
+      case "scanByScreenName":
+        handleScanByScreenName(
+          request as AIScannerMsgRequest<"scanByScreenName">,
+          sender,
+        );
+        break;
     }
   },
 );
 
-export interface UserGetReq {
-  user: string;
-  id: string;
+/**
+ * Running on judge by tweet requested
+ * @param request
+ * @param sender
+ */
+async function handleScanByTweetRequest(
+  request: AIScannerMsgRequest<"scanByTweet">,
+  sender: chrome.runtime.MessageSender,
+) {
+  const cache = await getCache(request.value.tweet.user.screen_name);
+
+  if (cache === null) {
+    console.log(
+      `Handle Scan By Tweet Request, screen name: ${request.value.tweet.user.screen_name}`,
+    );
+
+    if (client === null) {
+      // Setup client when client is null
+      const api = new TwitterOpenApi();
+      client = await api.getGuestClient();
+    }
+
+    const scanner = new Scanner(client);
+    const scanResult = await scanner.scanByUserTweet(request.value.tweet);
+
+    setCache(request.value.tweet.user.screen_name, scanResult);
+
+    sendResponse(
+      {
+        requestName: "scanByTweet",
+        messageId: request.messageId,
+        value: scanResult,
+      },
+      sender,
+    );
+  } else {
+    console.log(
+      `[USE CACHE] Handle Scan By Tweet Request, screen name: ${request.value.tweet.user.screen_name}`,
+      cache,
+    );
+
+    sendResponse(
+      {
+        requestName: "scanByTweet",
+        messageId: request.messageId,
+        value: cache,
+      },
+      sender,
+    );
+  }
 }
 
-export interface MessageResponse extends JudgeResult {
-  id: string;
+/**
+ * Running on judge by screen name requested
+ * @param request
+ * @param sender
+ */
+async function handleScanByScreenName(
+  request: AIScannerMsgRequest<"scanByScreenName">,
+  sender: chrome.runtime.MessageSender,
+) {
+  const cache = await getCache(request.value.screenName);
+
+  if (cache === null) {
+    console.log(
+      `Handle Scan By ScreenName, screen name: ${request.value.screenName}`,
+    );
+
+    if (client === null) {
+      // Setup client when client is null
+      const api = new TwitterOpenApi();
+      client = await api.getGuestClient();
+    }
+
+    const scanner = new Scanner(client);
+    const scanResult = await scanner.scanByScreenName(request.value.screenName);
+
+    setCache(request.value.screenName, scanResult);
+
+    sendResponse(
+      {
+        requestName: "scanByScreenName",
+        messageId: request.messageId,
+        value: scanResult,
+      },
+      sender,
+    );
+  } else {
+    console.log(
+      `[USE CACHE] Handle Scan By ScreenName, screen name: ${request.value.screenName}`,
+      cache,
+    );
+
+    sendResponse(
+      {
+        requestName: "scanByTweet",
+        messageId: request.messageId,
+        value: cache,
+      },
+      sender,
+    );
+  }
+}
+
+/**
+ * Send message response to content script.
+ * @param value
+ * @param sender
+ */
+async function sendResponse<T extends AIScannerMsgResponse>(
+  value: T,
+  sender: chrome.runtime.MessageSender,
+) {
+  await chrome.tabs.sendMessage<T>(sender.tab!.id!, value);
+}
+
+/**
+ * Set the judge result to storage.
+ * @param user
+ * @param data
+ */
+export async function setCache(user: string, data: ScanResult) {
+  await chrome.storage.local.set({
+    [user]: data,
+  });
+}
+
+/**
+ * Get all judge results from storage.
+ * @param user
+ * @returns
+ */
+export async function getCache(user: string): Promise<null | ScanResult> {
+  const res = await chrome.storage.local.get(user);
+  if (res[user] === undefined) {
+    return null;
+  } else {
+    return res[user];
+  }
 }
