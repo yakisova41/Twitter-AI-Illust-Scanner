@@ -7,6 +7,7 @@ import {
   createInfoElement,
   getReactPropsKey,
 } from "../utils";
+import { getMessage } from "./i18n";
 
 export async function handleStatusPage() {
   const foundAttr = "twitter-ai-judged";
@@ -51,7 +52,7 @@ async function handleTimelineMainTweet(tweet: Tweet, article: Element) {
 
   if (result.score > 50) {
     const info = createInfoElement(
-      `このユーザーはAI絵師の可能性があります スコア:${result.score}`,
+      getMessage("warn") + result.score,
       "#80163b",
       JSON.stringify(result, null, "<br>"),
     );
@@ -69,7 +70,7 @@ async function handleTimelineReplyTweet(tweet: Tweet, article: Element) {
 
   if (result.score > 50) {
     const info = createInfoElement(
-      `このユーザーはAI絵師の可能性があります スコア:${result.score}`,
+      getMessage("warn") + result.score,
       "#80163b",
       JSON.stringify(result, null, "<br>"),
     );
@@ -77,7 +78,11 @@ async function handleTimelineReplyTweet(tweet: Tweet, article: Element) {
     article.children[0].children[0].children[1].children[1].appendChild(info);
   }
 
-  console.log(result);
+  console.log(
+    "[Twitter AI Illust Scanner]<Status Judge Result> ",
+    tweet.permalink,
+    result,
+  );
 }
 
 function getMainTweetInfo(article: Element): Tweet | null {

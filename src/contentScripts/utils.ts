@@ -88,6 +88,8 @@ export function createInfoElement(
     popupContent.innerHTML = popup;
     popupContent.style.wordBreak = "break-all";
     popupContent.style.display = "none";
+    popupContent.style.fontFamily = "TwitterChirp";
+
     toggle.textContent = "  ▼  詳細";
     let isOpen = false;
 

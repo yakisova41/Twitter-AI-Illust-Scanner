@@ -48,9 +48,23 @@ chrome.runtime.onMessage.addListener(
           sender,
         );
         break;
+      case "i18n":
+        handlei18n(request as AIScannerMsgRequest<"i18n">, sendResponse);
     }
   },
 );
+
+/**
+ * Bypass the message i18n to MAIN world cuz where can't use the chrome.i18n api.
+ * @param request
+ * @param sender
+ */
+export function handlei18n(
+  request: AIScannerMsgRequest<"i18n">,
+  sendResponse: (response?: any) => void,
+) {
+  sendResponse(chrome.i18n.getMessage(request.value.messageName));
+}
 
 /**
  * Running on judge by tweet requested

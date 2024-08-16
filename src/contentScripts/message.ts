@@ -32,11 +32,15 @@ export interface AIScannerRequestValues {
   scanByScreenName: {
     screenName: string;
   };
+  i18n: {
+    messageName: string;
+  };
 }
 
 export interface AIScannerResponseValues {
   scanByTweet: ScanResult;
   scanByScreenName: ScanResult;
+  i18n: string;
 }
 
 export interface AIScannerMsgRequest<
