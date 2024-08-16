@@ -3,19 +3,24 @@ import { getElement } from "../utils";
 import { handleDefaultPage } from "./handleDefaultPage";
 import { handleProfilePage } from "./handleProfilePage";
 import { handleStatusPage } from "./handleStatusPage";
+import { setupi18n } from "./i18n";
 
-const mainObserver = new MutationObserver(() => {
-  routing({
-    default: [handleDefaultPage],
-    status: [handleStatusPage],
-    profile: [handleProfilePage, handleDefaultPage],
-  });
-});
+(async () => {
+  await setupi18n();
 
-getElement("main").then((main) => {
-  mainObserver.observe(main, {
-    subtree: true,
-    childList: true,
-    characterData: true,
+  const mainObserver = new MutationObserver(() => {
+    routing({
+      default: [handleDefaultPage],
+      status: [handleStatusPage],
+      profile: [handleProfilePage, handleDefaultPage],
+    });
   });
-});
+
+  getElement("main").then((main) => {
+    mainObserver.observe(main, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+    });
+  });
+})();

@@ -6,6 +6,7 @@ import {
   getReactPropsKey,
 } from "../utils";
 import { sendRequest } from "../message";
+import { getMessage } from "./i18n";
 
 export function handleDefaultPage() {
   const foundAttr = "twitter-ai-illustator-scanner-checked";
@@ -33,7 +34,7 @@ async function handleTimelineTweet(tweet: Tweet, article: Element) {
 
   if (result.score > 50) {
     const info = createInfoElement(
-      `このユーザーはAI絵師の可能性があります スコア:${result.score}`,
+      getMessage("warn") + result.score,
       "#80163b",
       JSON.stringify(result, null, "<br>"),
     );
@@ -41,7 +42,11 @@ async function handleTimelineTweet(tweet: Tweet, article: Element) {
     article.children[0].children[0].children[1].children[1].appendChild(info);
   }
 
-  console.log(result);
+  console.log(
+    "[Twitter AI Illust Scanner]<Tweet Judge Result> ",
+    tweet.permalink,
+    result,
+  );
 }
 
 function getTweetInfo(article: Element): Tweet | null {

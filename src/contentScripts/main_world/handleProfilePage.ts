@@ -1,5 +1,6 @@
 import { sendRequest } from "../message";
 import { createInfoElement } from "../utils";
+import { getMessage } from "./i18n";
 
 let previousUser: null | string = null;
 let previousInfo: null | Element = null;
@@ -38,7 +39,7 @@ export async function handleProfilePage() {
 
       if (result.score > 50) {
         const info = createInfoElement(
-          `このユーザーはAI絵師の可能性があります スコア:${result.score}`,
+          getMessage("warn") + result.score,
           "#80163b",
           JSON.stringify(result, null, "<br>"),
         );
@@ -48,7 +49,11 @@ export async function handleProfilePage() {
         previousInfo = info;
       }
 
-      console.log(screenName, result);
+      console.log(
+        "[Twitter AI Illust Scanner]<Profile Judge Result> ",
+        screenName,
+        result,
+      );
     }, 100);
   }
 }
