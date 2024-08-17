@@ -102,19 +102,31 @@ async function handleScanByTweetRequest(
       sender,
     );
   } else {
-    console.log(
-      `[USE CACHE] Handle Scan By Tweet Request, screen name: ${request.value.tweet.user.screen_name}`,
-      cache,
-    );
+    const currentDate = new Date();
+    const dayDiff = (currentDate.getTime() - cache.scanDate) / 86400000;
 
-    sendResponse(
-      {
-        requestName: "scanByTweet",
-        messageId: request.messageId,
-        value: cache,
-      },
-      sender,
-    );
+    if (dayDiff > 7) {
+      console.log(
+        `[UPDATE CACHE] screen name: ${request.value.tweet.user.screen_name}`,
+        cache,
+      );
+      await setCache(request.value.tweet.user.screen_name, null);
+      await handleScanByTweetRequest(request, sender);
+    } else {
+      console.log(
+        `[USE CACHE] Handle Scan By Tweet Request, screen name: ${request.value.tweet.user.screen_name}`,
+        cache,
+      );
+
+      sendResponse(
+        {
+          requestName: "scanByTweet",
+          messageId: request.messageId,
+          value: cache,
+        },
+        sender,
+      );
+    }
   }
 }
 
@@ -154,19 +166,31 @@ async function handleScanByScreenName(
       sender,
     );
   } else {
-    console.log(
-      `[USE CACHE] Handle Scan By ScreenName, screen name: ${request.value.screenName}`,
-      cache,
-    );
+    const currentDate = new Date();
+    const dayDiff = (currentDate.getTime() - cache.scanDate) / 86400000;
 
-    sendResponse(
-      {
-        requestName: "scanByTweet",
-        messageId: request.messageId,
-        value: cache,
-      },
-      sender,
-    );
+    if (dayDiff > 7) {
+      console.log(
+        `[UPDATE CACHE] screen name: ${request.value.screenName}`,
+        cache,
+      );
+      await setCache(request.value.screenName, null);
+      await handleScanByScreenName(request, sender);
+    } else {
+      console.log(
+        `[USE CACHE] Handle Scan By ScreenName, screen name: ${request.value.screenName}`,
+        cache,
+      );
+
+      sendResponse(
+        {
+          requestName: "scanByTweet",
+          messageId: request.messageId,
+          value: cache,
+        },
+        sender,
+      );
+    }
   }
 }
 
@@ -187,7 +211,7 @@ async function sendResponse<T extends AIScannerMsgResponse>(
  * @param user
  * @param data
  */
-export async function setCache(user: string, data: ScanResult) {
+export async function setCache(user: string, data: ScanResult | null) {
   await chrome.storage.local.set({
     [user]: data,
   });
