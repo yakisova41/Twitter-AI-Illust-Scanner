@@ -48,6 +48,7 @@ export class Scanner {
     isIncludeWordAboutAIinProfile: [["=", true, 60]],
     isIncludeWordAboutHumaninProfile: [["=", true, -60]],
     intervalAvg: [
+      ["=", null, 0],
       ["<", 1, 50],
       ["<", 0.5, 20],
     ],
@@ -98,7 +99,7 @@ export class Scanner {
     return this.scan(legacy, userId);
   }
 
-  private async scan(user: User, userId: string) {
+  private async scan(user: User, userId: string): Promise<ScanResult> {
     const { intervalAvg, isIncludeWordAboutAI, imgProportion } =
       await this.scanTweets(userId);
     const isIncludeWordAboutAIinProfile =
@@ -119,6 +120,8 @@ export class Scanner {
       isIncludeWordAboutHumaninProfile,
     );
 
+    const date = new Date();
+
     return {
       isIncludeWordAboutAI,
       score: this.score,
@@ -126,6 +129,7 @@ export class Scanner {
       imgProportion,
       isIncludeWordAboutAIinProfile,
       isIncludeWordAboutHumaninProfile,
+      scanDate: date.getTime(),
     };
   }
 
@@ -244,7 +248,11 @@ export class Scanner {
         current.tweet.fullText.match(this.aiRegex) !== null;
     }
 
-    const intervalAvg = totalInterval === 0 ? 0 : totalInterval / tweets.length;
+    /**
+     * When it failed to get tweets, declare total interval as null and attempt to rescan on next scan request.
+     */
+    const intervalAvg =
+      totalInterval === 0 ? null : totalInterval / tweets.length;
 
     return {
       intervalAvg,
@@ -318,10 +326,11 @@ interface GetTweetsWithMediaResult {
 export interface ScanResult {
   isIncludeWordAboutAI: boolean;
   score: number;
-  intervalAvg: number;
+  intervalAvg: number | null;
   imgProportion: number;
   isIncludeWordAboutAIinProfile: boolean;
   isIncludeWordAboutHumaninProfile: boolean;
+  scanDate: number;
 }
 
 type TweetWithMediaFromWebAPP = Exclude<
@@ -335,7 +344,7 @@ interface TweetWithMediaFromWebAPP_AND_DATE {
 }
 
 interface TweetsScanResult {
-  intervalAvg: number;
+  intervalAvg: number | null;
   isIncludeWordAboutAI: boolean;
   imgProportion: number;
 }
