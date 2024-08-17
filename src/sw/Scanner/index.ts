@@ -1,12 +1,17 @@
 import { Tweet, User } from "src/tweet";
 import {
+  TimelineApiUtilsResponse,
   TweetApiUtilsData,
+  TwitterApiUtilsResponse,
+  TwitterOpenApi,
   TwitterOpenApiClient,
+  UserApiUtilsData,
 } from "twitter-openapi-typescript";
 import { type User as OpenAPIUser } from "twitter-openapi-typescript-generated";
 
 export class Scanner {
   static AIWORDS = [
+    "術師",
     "人工智能",
     "人工知能",
     "出力",
@@ -58,10 +63,10 @@ export class Scanner {
       [">", 0.7, 10],
       [">", 0.5, 5],
     ],
-    isIncludeWordAboutAI: [["=", true, 50]],
+    isIncludeWordAboutAI: [["=", true, 70]],
   };
 
-  private readonly client: TwitterOpenApiClient;
+  private client: TwitterOpenApiClient;
 
   private score = 0;
 
@@ -82,9 +87,11 @@ export class Scanner {
    * @param tweet
    */
   public async scanByScreenName(screenName: string): Promise<ScanResult> {
-    const userResponse = await this.client
-      .getUserApi()
-      .getUserByScreenName({ screenName: screenName });
+    const userResponse = await this.getUserByScreenName(screenName);
+
+    if (userResponse === null) {
+      throw new Error();
+    }
 
     const userData = userResponse.data.user;
 
@@ -272,9 +279,11 @@ export class Scanner {
     const tweetsWithMediaFromWebAPPANDDATE: TweetWithMediaFromWebAPP_AND_DATE[] =
       [];
 
-    const tweetsResponse = await this.client
-      .getTweetApi()
-      .getUserTweets({ userId: userId, count: 20 });
+    const tweetsResponse = await this.getUserTweets(userId);
+
+    if (tweetsResponse === null) {
+      throw new Error("");
+    }
 
     const tweets = tweetsResponse.data.data;
 
@@ -315,6 +324,55 @@ export class Scanner {
     });
 
     return { tweets: sortedTweets, imgProportion };
+  }
+
+  private async getUserByScreenName(
+    screenName: string,
+  ): Promise<null | TwitterApiUtilsResponse<UserApiUtilsData>> {
+    const get = () => {
+      return this.client
+        .getUserApi()
+        .getUserByScreenName({ screenName: screenName });
+    };
+
+    return new Promise((r) => {
+      get()
+        .then((e) => {
+          r(e);
+        })
+        .catch(async (e) => {
+          await this.renewClient();
+          r(await get());
+        });
+    });
+  }
+
+  private async getUserTweets(
+    userId: string,
+  ): Promise<null | TwitterApiUtilsResponse<
+    TimelineApiUtilsResponse<TweetApiUtilsData>
+  >> {
+    const get = () => {
+      return this.client
+        .getTweetApi()
+        .getUserTweets({ userId: userId, count: 20 });
+    };
+
+    return new Promise((r) => {
+      get()
+        .then((e) => {
+          r(e);
+        })
+        .catch(async (e) => {
+          await this.renewClient();
+          r(await get());
+        });
+    });
+  }
+
+  private async renewClient() {
+    const api = new TwitterOpenApi();
+    this.client = await api.getGuestClient();
   }
 }
 
