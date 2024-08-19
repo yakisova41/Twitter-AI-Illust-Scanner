@@ -15,12 +15,14 @@ export class Scanner {
     "人工智能",
     "人工知能",
     "出力",
-    "[sS][dD]" /*sd */,
-    "[nN][aA][iI]" /*nai */,
-    "[Mm][iI][dD][jJ][oO][uU][rR][nN][eE][yY]" /*Midjourney */,
-    "[dD][aA][lL][lL][eE]" /* DALLE */,
-    "[Dd]iffusion" /* ~ diffusion */,
-    "(?=.*niji)(?=.*journey)" /* nijijourney */,
+    "[sS]\\s?[dD]" /*sd */,
+    "[nN]\\s?[aA]\\s?[iI]" /*nai */,
+    "[Mm]\\s?[iI]\\s?[dD]\\s?[jJ]\\s?[oO]\\s?[uU]\\s?[rR]\\s?[nN]\\s?[eE]\\s?[yY]" /*Midjourney */,
+    "[dD]\\s?[aA]\\s?[lL]\\s?[lL]\\s?[eE]" /* DALLE */,
+    "[Dd]\\s?i\\s?f\\s?f\\s?u\\s?s\\s?i\\s?o\\s?n" /* ~ diffusion */,
+    "(?=.*[nN]iji)(?=.*[jJ]ourney)" /* nijijourney */,
+    "[ニに]]\\s?[じジ]]\\s?[じジ]]\\s?[ゃャ]]\\s?ー]\\s?[ニに]ー",
+    "[pP]\\s?i\\s?x\\s?a\\s?i",
     "プロンプト",
     "[pP]rompt",
     "𝒜𝐼",
@@ -30,9 +32,10 @@ export class Scanner {
     "AIGC",
     "[gG]enera(te|tion|ted)",
     "呪文",
-    "(?<![a-zA-Z])Kei(?<![a-zA-Z])" /* Kei is prompt creator */,
+    "術師",
+    "加筆修正",
   ];
-  private aiRegex = `${Scanner.AIWORDS.join("|")}`;
+  private aiRegex = new RegExp(`${Scanner.AIWORDS.join("|")}`);
 
   static HUMANWORDS = [
     "スマホ",
@@ -45,9 +48,11 @@ export class Scanner {
     "下手",
     "(?=.*AI)(?=.*禁止)",
     "(?=.*AI)(?=.*🚫)",
+    "(?=.*AI)(?=.*ご遠慮)",
     "成人済み",
+    "^(?!.*respect).*draw.*",
   ];
-  private humanRegex = `${Scanner.HUMANWORDS.join("|")}`;
+  private humanRegex = new RegExp(`${Scanner.HUMANWORDS.join("|")}`);
 
   static scoreRule: ScoreRule = {
     isIncludeWordAboutAIinProfile: [["=", true, 60]],
@@ -70,8 +75,18 @@ export class Scanner {
 
   private score = 0;
 
+  /**
+   * Debug & Benchmark mode;
+   */
+  private debug = true;
+
   constructor(client: TwitterOpenApiClient) {
     this.client = client;
+
+    if (this.debug) {
+      console.log("AI regex", this.aiRegex.source);
+      console.log("Human regex", this.humanRegex.source);
+    }
   }
 
   /**
@@ -79,7 +94,17 @@ export class Scanner {
    * @param tweet
    */
   public async scanByUserTweet(tweet: Tweet): Promise<ScanResult> {
-    return this.scan(tweet.user, tweet.user.id_str);
+    if (this.debug) {
+      console.time("scanByUserTweet()");
+    }
+
+    const scanResult = this.scan(tweet.user, tweet.user.id_str);
+
+    if (this.debug) {
+      console.timeEnd("scanByUserTweet()");
+    }
+
+    return scanResult;
   }
 
   /**
@@ -103,7 +128,17 @@ export class Scanner {
 
     const userId = userData.restId;
 
-    return this.scan(legacy, userId);
+    if (this.debug) {
+      console.time("scanByScreenName()");
+    }
+
+    const scanResult = this.scan(legacy, userId);
+
+    if (this.debug) {
+      console.timeEnd("scanByScreenName()");
+    }
+
+    return scanResult;
   }
 
   private async scan(user: User, userId: string): Promise<ScanResult> {
@@ -188,10 +223,9 @@ export class Scanner {
     const { description, location, name, screen_name } = userData;
 
     if (
-      location.match(this.aiRegex) ||
-      description.match(this.aiRegex) ||
-      name.match(this.aiRegex) ||
-      screen_name.match(this.aiRegex)
+      this.aiRegex.test(
+        location + " " + description + " " + screen_name + " " + name,
+      )
     ) {
       return true;
     } else {
@@ -209,10 +243,9 @@ export class Scanner {
     const { description, location, name, screen_name } = userData;
 
     if (
-      location.match(this.humanRegex) ||
-      description.match(this.humanRegex) ||
-      name.match(this.humanRegex) ||
-      screen_name.match(this.humanRegex)
+      this.humanRegex.test(
+        location + " " + description + " " + screen_name + " " + name,
+      )
     ) {
       return true;
     } else {
@@ -246,13 +279,15 @@ export class Scanner {
       }
 
       // Search AI in Tag
-      isIncludeWordAboutAI =
-        current.tweet.entities.hashtags.filter(({ text }) => {
-          return text.match(this.aiRegex);
-        }).length !== 0;
+      let tags = "";
 
-      isIncludeWordAboutAI =
-        current.tweet.fullText.match(this.aiRegex) !== null;
+      for (let i = 0; i < current.tweet.entities.hashtags.length; i++) {
+        tags += " " + current.tweet.entities.hashtags[i].text;
+      }
+
+      isIncludeWordAboutAI = this.aiRegex.test(tags);
+
+      isIncludeWordAboutAI = this.aiRegex.test(current.tweet.fullText);
     }
 
     /**
@@ -287,7 +322,9 @@ export class Scanner {
 
     const tweets = tweetsResponse.data.data;
 
-    tweets.forEach((tweet) => {
+    for (let i = 0; i < tweets.length; i++) {
+      const tweet = tweets[i];
+
       const { entities, createdAt } = tweet.tweet.legacy!;
 
       // is with media
@@ -306,7 +343,7 @@ export class Scanner {
           }
         }
       }
-    });
+    }
 
     /**
      * Percentage of image tweets from Twitter Web App in 100 tweets
