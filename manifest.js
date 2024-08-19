@@ -24,6 +24,11 @@ const manifest = {
   background: {
     service_worker: "src/sw/sw.ts",
   },
+  icons: {
+    16: "./public/16.png",
+    48: "./public/48.png",
+    128: "./public/128.png",
+  },
 };
 
 export default manifest;
