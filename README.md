@@ -8,6 +8,8 @@ It chrome extension can scanning if the user tweeting the illustration is using 
 
 ## Judgment Criteria
 
+If the score exceeds 50 points, it is determined to be AI and the results are cached locally for 7 days.
+
 ### Explanation of Each Rule
 
 1. **isIncludeWordAboutAIinProfile**
