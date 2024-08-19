@@ -4,7 +4,7 @@ import { AIScannerMsgRequest, sendRequest } from "../message";
 let messages: Record<string, string> = {};
 
 export async function setupi18n() {
-  const messageKeys = ["warn"];
+  const messageKeys = ["warn", "detail"];
 
   await Promise.all(
     messageKeys.map(async (key) => {

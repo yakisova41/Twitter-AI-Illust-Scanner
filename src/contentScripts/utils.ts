@@ -1,4 +1,5 @@
 import { Tweet } from "src/tweet";
+import { getMessage } from "./main_world/i18n";
 
 /**
  * Search element from parent element (default is body).
@@ -90,18 +91,18 @@ export function createInfoElement(
     popupContent.style.display = "none";
     popupContent.style.fontFamily = "TwitterChirp";
 
-    toggle.textContent = "  ▼  詳細";
+    toggle.textContent = "  ▼  " + getMessage("detail");
     let isOpen = false;
 
     toggle.addEventListener("click", (e) => {
       e.preventDefault();
       if (isOpen) {
         isOpen = false;
-        toggle.textContent = "  ▼  詳細";
+        toggle.textContent = "  ▼  " + getMessage("detail");
         popupContent.style.display = "none";
       } else {
         isOpen = true;
-        toggle.textContent = "  ▲  詳細";
+        toggle.textContent = "  ▲  " + getMessage("detail");
         popupContent.style.display = "block";
       }
     });
