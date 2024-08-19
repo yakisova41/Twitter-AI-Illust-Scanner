@@ -13,18 +13,21 @@ If the score exceeds 50 points, it is determined to be AI and the results are ca
 ### Explanation of Each Rule
 
 1. **isIncludeWordAboutAIinProfile**
+
    - **Rule**: Checks whether the profile includes a word related to AI.
    - **Condition**: `=` (checks for equality, i.e., whether the condition is true)
    - **Threshold**: `true`
    - **Score**: 60 points (If the profile includes a word related to AI, 60 points are awarded.)
 
 2. **isIncludeWordAboutHumaninProfile**
+
    - **Rule**: Checks whether the profile includes a word related to humans.
    - **Condition**: `=` (checks for equality, i.e., whether the condition is true)
    - **Threshold**: `true`
    - **Score**: -60 points (If the profile includes a word related to humans, 60 points are subtracted.)
 
 3. **intervalAvg**
+
    - **Rule**: Average interval between tweets posted.
    - **Conditions and Scores**:
      - `=` null → 0 points (If the average value is not present)
@@ -32,6 +35,7 @@ If the score exceeds 50 points, it is determined to be AI and the results are ca
      - `<` 0.5 → 20 points (If the average value is less than 0.5)
 
 4. **imgProportion**
+
    - **Rule**: Determines the score based on the proportion of an media tweets.
    - **Conditions and Scores**:
      - `>` 0.95 → 40 points (If the image proportion is greater than 95%)
@@ -44,3 +48,11 @@ If the score exceeds 50 points, it is determined to be AI and the results are ca
    - **Condition**: `=` (checks for equality)
    - **Threshold**: `true`
    - **Score**: 70 points (If the specific word related to AI is included, 70 points are awarded.)
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
+
+### Depends on the following packages
+
+- [fa0311/twitter-openapi-typescript](https://github.com/fa0311/twitter-openapi-typescript)
