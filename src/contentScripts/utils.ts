@@ -82,6 +82,7 @@ export function createInfoElement(
   info.style.color = "#e8f6ff";
   info.style.borderRadius = "8px";
   info.style.marginTop = "10px";
+  info.className = "twitter-ai-judge-info";
 
   if (popup !== undefined) {
     const toggle = document.createElement("span");
@@ -121,65 +122,86 @@ export type ReacrElement<T extends string, P extends any> = Element & {
 export interface ArticleContentProps {
   children: {
     props: {
-      children: {
-        _owner: {
-          memoizedProps: {
+      children: [
+        unknown, // index 0
+        {
+          // index 1
+          props: {
             children: [
-              [],
+              unknown, // index 0
               [
-                null,
-                null,
-                null,
-                null,
-                null,
+                // index 1 (ここが配列になっている)
+                unknown, // index 1[0]
                 {
+                  // index 1[1]
                   props: {
                     children: [
+                      unknown, // index 0
+                      unknown, // index 1
+                      unknown, // index 2
                       {
+                        // index 3
                         props: {
-                          children: {
-                            props: {
-                              tweet: Tweet;
-                            };
-                          };
+                          children: [
+                            unknown, // index 0
+                            unknown, // index 1
+                            {
+                              // index 2
+                              props: {
+                                tweet: Tweet;
+                              };
+                            },
+                            ...any[],
+                          ];
                         };
                       },
+                      ...any[],
                     ];
                   };
                 },
+                ...any[],
               ],
+              ...any[],
             ];
           };
-        };
-      };
+        },
+        ...any[],
+      ];
     };
   };
 }
 
 export interface StatusArticleContentProps {
   children: [
+    // children[0]: ここが配列
     [
-      {},
-      {},
+      unknown, // [0][0]
+      unknown, // [0][1]
       {
+        // [0][2] <--- ここに配置する
         props: {
           children: [
-            {},
-            {},
-            {},
-            {},
-            {},
-            {},
-            {},
+            unknown, // 0
+            unknown, // 1
+            unknown, // 2
+            unknown, // 3
+            unknown, // 4
+            unknown, // 5
+            unknown, // 6
+            unknown, // 7
+            unknown, // 8
             {
+              // 9
               props: {
                 tweet: Tweet;
               };
             },
+            ...any[],
           ];
         };
       },
+      ...any[],
     ],
+    ...any[],
   ];
 }
-type a = StatusArticleContentProps["children"][0][2];

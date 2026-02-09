@@ -1,7 +1,7 @@
 // @ts-check
+import { defineManifest } from "crx-monkey-next";
 
-/** @type {import('crx-monkey').CrxMonkeyManifest} */
-const manifest = {
+export default defineManifest({
   name: "Twitter AI Illust Scanner",
   version: "1.1.0",
   manifest_version: 3,
@@ -18,17 +18,15 @@ const manifest = {
       matches: ["https://x.com/*", "https://twitter.com/*"],
       js: ["src/contentScripts/main_world/main.ts"],
       world: "MAIN",
-      connection_isolated: true,
+      use_isolated_connection: true,
     },
   ],
   background: {
-    service_worker: "src/sw/sw.ts",
+    service_worker: "./src/sw/sw.ts",
   },
   icons: {
     16: "./public/16.png",
     48: "./public/48.png",
     128: "./public/128.png",
   },
-};
-
-export default manifest;
+});

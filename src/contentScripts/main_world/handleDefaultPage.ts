@@ -7,25 +7,31 @@ import {
 } from "../utils";
 import { sendRequest } from "../message";
 import { getMessage } from "./i18n";
+import { RouteComponent } from "../twitterRouting";
 
-export function handleDefaultPage() {
-  const foundAttr = "twitter-ai-illustator-scanner-checked";
-  const article = document.querySelector(`article:not([${foundAttr}])`);
+const checkedAttr = "twitter-ai-illustator-scanner-checked";
 
-  if (article !== null) {
-    article.setAttribute(foundAttr, "");
-    const tweet = getTweetInfo(article);
+export const handleDefaultPage: RouteComponent = {
+  onChangeContent: function () {
+    const article = document.querySelector(`article:not([${checkedAttr}])`);
 
-    if (tweet !== null) {
-      const { entities } = tweet;
+    if (article !== null) {
+      article.setAttribute(checkedAttr, "");
+      const tweet = getTweetInfo(article);
 
-      if (entities.media !== undefined && entities.media.length > 0) {
-        // is Image tweet
-        handleTimelineTweet(tweet, article);
+      if (tweet !== null) {
+        const { entities } = tweet;
+
+        if (entities.media !== undefined && entities.media.length > 0) {
+          // is Image tweet
+          handleTimelineTweet(tweet, article);
+        }
       }
     }
-  }
-}
+  },
+  onChangePage: function () {},
+  onPurge: function () {},
+};
 
 async function handleTimelineTweet(tweet: Tweet, article: Element) {
   const result = await sendRequest("scanByTweet", {
@@ -36,17 +42,11 @@ async function handleTimelineTweet(tweet: Tweet, article: Element) {
     const info = createInfoElement(
       getMessage("warn") + result.score,
       "#80163b",
-      JSON.stringify(result, null, "<br>"),
+      JSON.stringify(result, null, "<br>").slice(1, -1),
     );
 
     article.children[0].children[0].children[1].children[1].appendChild(info);
   }
-
-  console.log(
-    "[Twitter AI Illust Scanner]<Tweet Judge Result> ",
-    tweet.permalink,
-    result,
-  );
 }
 
 function getTweetInfo(article: Element): Tweet | null {
@@ -58,8 +58,8 @@ function getTweetInfo(article: Element): Tweet | null {
   const key = getReactPropsKey(contentElem);
   const props: ArticleContentProps = contentElem[key];
   result =
-    props.children.props.children._owner.memoizedProps.children[1][5].props
-      .children[0].props.children.props.tweet;
-
+    props.children.props.children[1].props.children[1][1].props.children[3]
+      .props.children[2].props.tweet;
+  console.log("Tweet:", result);
   return result;
 }

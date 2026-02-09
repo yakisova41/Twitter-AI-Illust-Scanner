@@ -4,16 +4,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npx crx-monkey build",
-    "dev": "npx crx-monkey dev"
+    "crxm": "npx crx-monkey-next",
+    "build": "npx crx-monkey-next build",
+    "dev": "npx crx-monkey-next dev"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.269",
-    "crx-monkey": "^0.11.4",
     "license-checker": "^25.0.1",
-    "prettier": "^3.3.3"
+    "prettier": "^3.8.1"
   },
   "dependencies": {
-    "twitter-openapi-typescript": "^0.0.34"
+    "crx-monkey-next": "^0.1.5",
+    "twitter-openapi-typescript-browser": "https://github.com/yakisova41/twitter-openapi-typescript-browser",
+    "x-client-transaction-id-generater-browser": "https://github.com/yakisova41/x-client-transaction-id-generater-browser"
   }
 }

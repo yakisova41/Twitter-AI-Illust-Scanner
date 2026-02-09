@@ -8,42 +8,47 @@ import {
   getReactPropsKey,
 } from "../utils";
 import { getMessage } from "./i18n";
+import { RouteComponent } from "../twitterRouting";
 
-export async function handleStatusPage() {
-  const foundAttr = "twitter-ai-judged";
+const judgedAttr = "twitter-ai-judged";
 
-  const mainArticle = document.querySelector(
-    `article[tabindex="-1"]:not([${foundAttr}])`,
-  );
-  if (mainArticle !== null) {
-    mainArticle.setAttribute(foundAttr, "");
-    const tweet = getMainTweetInfo(mainArticle);
+export const handleStatusPage: RouteComponent = {
+  onChangeContent: function () {
+    const article = document.querySelector(
+      `article[tabindex="0"]:not([${judgedAttr}])`,
+    );
+    if (article !== null) {
+      article.setAttribute(judgedAttr, "");
+      const tweet = getTweetInfo(article);
 
-    if (tweet !== null) {
-      const { entities } = tweet;
+      if (tweet !== null) {
+        const { entities } = tweet;
 
-      if (entities.media !== undefined && entities.media.length > 0) {
-        handleTimelineMainTweet(tweet, mainArticle);
+        if (entities.media !== undefined && entities.media.length > 0) {
+          handleTimelineReplyTweet(tweet, article);
+        }
       }
     }
-  }
+  },
+  onChangePage: function () {
+    const mainArticle = document.querySelector(
+      `article[tabindex="-1"]:not([${judgedAttr}])`,
+    );
+    if (mainArticle !== null) {
+      mainArticle.setAttribute(judgedAttr, "");
+      const tweet = getMainTweetInfo(mainArticle);
 
-  const article = document.querySelector(
-    `article[tabindex="0"]:not([${foundAttr}])`,
-  );
-  if (article !== null) {
-    article.setAttribute(foundAttr, "");
-    const tweet = getTweetInfo(article);
+      if (tweet !== null) {
+        const { entities } = tweet;
 
-    if (tweet !== null) {
-      const { entities } = tweet;
-
-      if (entities.media !== undefined && entities.media.length > 0) {
-        handleTimelineReplyTweet(tweet, article);
+        if (entities.media !== undefined && entities.media.length > 0) {
+          handleTimelineMainTweet(tweet, mainArticle);
+        }
       }
     }
-  }
-}
+  },
+  onPurge: function () {},
+};
 
 async function handleTimelineMainTweet(tweet: Tweet, article: Element) {
   const result = await sendRequest("scanByTweet", {
@@ -60,7 +65,6 @@ async function handleTimelineMainTweet(tweet: Tweet, article: Element) {
     article.children[0].children[0].appendChild(info);
   }
 
-  console.log(result);
 }
 
 async function handleTimelineReplyTweet(tweet: Tweet, article: Element) {
@@ -72,7 +76,7 @@ async function handleTimelineReplyTweet(tweet: Tweet, article: Element) {
     const info = createInfoElement(
       getMessage("warn") + result.score,
       "#80163b",
-      JSON.stringify(result, null, "<br>"),
+      JSON.stringify(result, null, "<br>").slice(1, -1),
     );
 
     article.children[0].children[0].children[1].children[1].appendChild(info);
@@ -95,7 +99,12 @@ function getMainTweetInfo(article: Element): Tweet | null {
 
   const key = getReactPropsKey(contentElem);
   const props: StatusArticleContentProps = contentElem[key];
-  result = props.children[0][2].props.children[7].props.tweet;
+
+  result = props.children[0][2]?.props?.children[9]?.props?.tweet;
+
+  if (result === undefined) {
+    return null;
+  }
 
   return result;
 }
@@ -109,8 +118,8 @@ function getTweetInfo(article: Element): Tweet | null {
   const key = getReactPropsKey(contentElem);
   const props: ArticleContentProps = contentElem[key];
   result =
-    props.children.props.children._owner.memoizedProps.children[1][5].props
-      .children[0].props.children.props.tweet;
+    props.children.props.children[1].props.children[1][1].props.children[3]
+      .props.children[2].props.tweet;
 
   return result;
 }

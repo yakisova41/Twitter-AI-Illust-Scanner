@@ -1,4 +1,4 @@
-import { bypassSendMessage } from "crx-monkey";
+import { message } from "crx-monkey-next/client";
 import { AIScannerMsgRequest, sendRequest } from "../message";
 
 let messages: Record<string, string> = {};
@@ -8,7 +8,7 @@ export async function setupi18n() {
 
   await Promise.all(
     messageKeys.map(async (key) => {
-      await bypassSendMessage<AIScannerMsgRequest<"i18n">>(
+      await message.sendMessage<AIScannerMsgRequest<"i18n">>(
         {
           requestName: "i18n",
           value: {

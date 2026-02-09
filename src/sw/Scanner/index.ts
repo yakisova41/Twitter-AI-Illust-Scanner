@@ -6,8 +6,8 @@ import {
   TwitterOpenApi,
   TwitterOpenApiClient,
   UserApiUtilsData,
-} from "twitter-openapi-typescript";
-import { type User as OpenAPIUser } from "twitter-openapi-typescript-generated";
+} from "twitter-openapi-typescript-browser/twitter-openapi-typescript";
+import { type User as OpenAPIUser } from "twitter-openapi-typescript-browser/twitter-openapi-typescript-generated";
 
 export class Scanner {
   static AIWORDS = [
