@@ -28,6 +28,7 @@ export interface Tweet {
   source_name: string;
   source_url: string;
   permalink: string;
+  retweeted_status?: Tweet;
 }
 
 export interface Entities {

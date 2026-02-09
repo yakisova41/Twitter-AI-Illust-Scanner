@@ -1,4 +1,4 @@
-import { routing } from "../twitterRouting";
+import { Router } from "../twitterRouting";
 import { getElement } from "../utils";
 import { handleDefaultPage } from "./handleDefaultPage";
 import { handleProfilePage } from "./handleProfilePage";
@@ -6,14 +6,16 @@ import { handleStatusPage } from "./handleStatusPage";
 import { setupi18n } from "./i18n";
 
 (async () => {
-  await setupi18n();
 
+  await setupi18n();
+  const router = new Router();
+  router.routes = {
+    default: [handleDefaultPage],
+    status: [handleStatusPage],
+    profile: [handleProfilePage, handleDefaultPage],
+  };
   const mainObserver = new MutationObserver(() => {
-    routing({
-      default: [handleDefaultPage],
-      status: [handleStatusPage],
-      profile: [handleProfilePage, handleDefaultPage],
-    });
+    router.route();
   });
 
   getElement("main").then((main) => {

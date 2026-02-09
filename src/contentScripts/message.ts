@@ -1,4 +1,4 @@
-import { bypassMessage, bypassSendMessage } from "crx-monkey";
+import { message } from "crx-monkey-next/client";
 import { ScanResult } from "src/sw/Scanner";
 import { Tweet } from "src/tweet";
 
@@ -9,13 +9,13 @@ export function sendRequest<T extends keyof AIScannerRequestValues>(
   return new Promise(async (resolve) => {
     const messageId = crypto.randomUUID();
 
-    bypassSendMessage<AIScannerMsgRequest<T>>({
+    message.sendMessage<AIScannerMsgRequest<T>>({
       requestName,
       value,
       messageId,
     });
 
-    const listener = bypassMessage<AIScannerMsgResponse<T>>((request) => {
+    const listener = message.addListener<AIScannerMsgResponse<T>>((request) => {
       if (request.messageId === messageId) {
         const { value } = request;
         listener.remove();

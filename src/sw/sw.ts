@@ -1,13 +1,14 @@
 import {
   TwitterOpenApi,
   TwitterOpenApiClient,
-} from "twitter-openapi-typescript";
+} from "twitter-openapi-typescript-browser/twitter-openapi-typescript";
 import { niceFetch } from "./niceFetch";
 import {
   AIScannerMsgRequest,
   AIScannerMsgResponse,
 } from "src/contentScripts/message";
 import { ScanResult, Scanner } from "./Scanner";
+
 
 TwitterOpenApi.twitter = "https://x.com/";
 TwitterOpenApi.fetchApi = niceFetch;
@@ -75,11 +76,16 @@ async function handleScanByTweetRequest(
   request: AIScannerMsgRequest<"scanByTweet">,
   sender: chrome.runtime.MessageSender,
 ) {
-  const cache = await getCache(request.value.tweet.user.screen_name);
+  let userScreenName = request.value.tweet.user.screen_name;
+  if (request.value.tweet.retweeted_status !== undefined) {
+    userScreenName = request.value.tweet.retweeted_status.user.screen_name;
+  }
+
+  const cache = await getCache(userScreenName);
 
   if (cache === null) {
     console.log(
-      `Handle Scan By Tweet Request, screen name: ${request.value.tweet.user.screen_name}`,
+      `Handle Scan By Tweet Request, screen name: @${userScreenName}`,
     );
 
     if (client === null) {
@@ -89,9 +95,13 @@ async function handleScanByTweetRequest(
     }
 
     const scanner = new Scanner(client);
-    const scanResult = await scanner.scanByUserTweet(request.value.tweet);
 
-    setCache(request.value.tweet.user.screen_name, scanResult);
+    const scanResult =
+      request.value.tweet.retweeted_status === undefined
+        ? await scanner.scanByUserTweet(request.value.tweet)
+        : await scanner.scanByUserTweet(request.value.tweet.retweeted_status);
+
+    setCache(userScreenName, scanResult);
 
     sendResponse(
       {
